@@ -40,6 +40,7 @@
           _                       (add-image-data uuid name ext)]
       (. res sendStatus 200))
     (catch js/Object e
+      (. js/console log e)
       (. res sendStatus 500))))
 
 ;; :update-image-list
@@ -55,4 +56,5 @@
                                                img))))
       (. res sendStatus 200))
     (catch js/Object e
+      (. js/console log e)
       (. res sendStatus 500))))

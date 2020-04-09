@@ -1,28 +1,23 @@
 (ns image-server.core
   (:require
    ["express" :as express]
-   ["stream" :as stream]
-   ["fs" :as fs]
-   ["uuid" :as uuidv4]
    ["process" :as process]
-   [clojure.string :as str]
    [cljs.core.async :as async :refer [>! <! go chan timeout go-loop]]
-   [async-interop.interop :refer-macros [<p!]]
    [image-server.util :as util]
    [image-server.db :as db]
-   [image-server.provider :as pro]
+   [image-server.provider :as prv]
    [image-server.receiver :as rcv]
-   [image-server.game-manager :as mng]))
+   [image-server.game-manager :as gm]))
 
 ;; Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- handle-init [req res]
+(defn- handle-init [_ res]
   (println "handle-init")
   (go (try
-        (do
-          (reset! @db/db {})
-          (util/return-success res "db initialized."))
+        (reset! @db/db {})
+        (util/return-success res "db initialized.")
         (catch js/Object e
+          (. js/console log e)
           (. res sendStatus 500)))))
 
 ;; Main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,7 +38,20 @@
 
     ;; Global
     (. app get "/init" handle-init)
+
+    ;; Receiver
     (. app post "/upload-image" rcv/handle-upload-image)
+    (. app post "/upload-image-list" rcv/handle-upload-image)
+
+    ;; Provider
+    (. app get "/get-image" prv/handle-get-image)
+    (. app get "/get-thumbnail" prv/handle-get-thumbnail)
+    (. app get "/get-image-list" prv/handle-get-image-list)
+
+    ;; Game Manager
+    (. app get "/select" gm/handle-select)
+    (. app get "/change-page" gm/handle-change-page)
+
 
     ;; Reloading indicator
     (when (some? @server)

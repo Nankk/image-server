@@ -21,3 +21,23 @@
     (catch js/Object e
       (. js/console log e)
       (. res sendStatus 500))))
+
+;;
+
+(defn- change-page [diff]
+  (swap! @db/db #(update % :selected-page-idx (fn [x] (+ x diff)))))
+
+(defn handle-change-page [req res]
+  (try
+    (let [query     (util/->query req)
+          _         (case (query :type)
+                      "increment" (change-page 1)
+                      "decrement" (change-page -1))
+          identicon (util/identicon {:seed (query :identicon-seed)
+                                     :size (query :size)})
+          ps        (. stream PassThrough)]
+      (. stream pipeline identicon ps
+         (fn [err] (when err (. js/console log err) (. res sendStatus 400)))))
+    (catch js/Object e
+      (. js/console log e)
+      (. res sendStatus 500))))

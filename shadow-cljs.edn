@@ -4,7 +4,9 @@
   [binaryage/devtools "0.9.7"]
   [org.clojure/core.async "0.4.500"]
   [org.clojure/test.check "0.10.0-alpha4"]
-  [async-interop "0.1.0"]]
+  [async-interop "0.1.0"]
+  [cljs-http "0.1.46"] ; for testing
+  ]
 
  :source-paths
  ["src/main"
