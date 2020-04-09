@@ -10,7 +10,7 @@ try {require('source-map-support').install();} catch (e) {console.warn('no "sour
 
 global.CLOSURE_NO_DEPS = true;
 
-global.CLOSURE_DEFINES = {"shadow.cljs.devtools.client.env.repl_pprint":false,"shadow.cljs.devtools.client.env.devtools_url":"","shadow.cljs.devtools.client.env.autoload":true,"shadow.cljs.devtools.client.env.proc_id":"019059ce-3e66-4864-9f6f-562f3b9723ee","goog.ENABLE_DEBUG_LOADER":false,"shadow.cljs.devtools.client.env.server_port":9630,"shadow.cljs.devtools.client.env.use_document_host":true,"shadow.cljs.devtools.client.env.module_format":"goog","goog.LOCALE":"en","re_frame.trace.trace_enabled_QMARK_":true,"shadow.cljs.devtools.client.env.build_id":"main","shadow.cljs.devtools.client.env.ignore_warnings":false,"goog.DEBUG":true,"cljs.core._STAR_target_STAR_":"nodejs","shadow.cljs.devtools.client.env.ssl":false,"shadow.cljs.devtools.client.env.enabled":true,"shadow.cljs.devtools.client.env.server_host":"localhost","goog.TRANSPILE":"never"};
+global.CLOSURE_DEFINES = {"shadow.cljs.devtools.client.env.repl_pprint":false,"shadow.cljs.devtools.client.env.devtools_url":"","shadow.cljs.devtools.client.env.autoload":true,"shadow.cljs.devtools.client.env.proc_id":"dbf7634e-b558-40a7-8e41-ef5baa0ba7b3","goog.ENABLE_DEBUG_LOADER":false,"shadow.cljs.devtools.client.env.server_port":9630,"shadow.cljs.devtools.client.env.use_document_host":true,"shadow.cljs.devtools.client.env.module_format":"goog","goog.LOCALE":"en","re_frame.trace.trace_enabled_QMARK_":true,"shadow.cljs.devtools.client.env.build_id":"main","shadow.cljs.devtools.client.env.ignore_warnings":false,"goog.DEBUG":true,"cljs.core._STAR_target_STAR_":"nodejs","shadow.cljs.devtools.client.env.ssl":false,"shadow.cljs.devtools.client.env.enabled":true,"shadow.cljs.devtools.client.env.server_host":"localhost","goog.TRANSPILE":"never"};
 
 var goog = global.goog = {};
 
@@ -2204,8 +2204,10 @@ SHADOW_IMPORT("cljs.core.async.impl.timers.js");
 SHADOW_IMPORT("cljs.core.async.impl.ioc_helpers.js");
 SHADOW_IMPORT("cljs.core.async.js");
 SHADOW_IMPORT("async_interop.interop.js");
+SHADOW_IMPORT("shadow.js.shim.module$jdenticon.js");
 SHADOW_IMPORT("image_server.util.js");
 SHADOW_IMPORT("image_server.db.js");
+SHADOW_IMPORT("image_server.const.js");
 SHADOW_IMPORT("image_server.provider.js");
 SHADOW_IMPORT("shadow.js.shim.module$jimp.js");
 SHADOW_IMPORT("image_server.receiver.js");

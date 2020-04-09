@@ -8,6 +8,8 @@
    [cljs.reader :refer [read-string]]
    [clojure.string :as str]))
 
+;; :upload-image
+
 (defn- ->buffer [data-uri]
   (let [b64 (str/replace data-uri #"^data:[^;]+;base64," "")]
     (js/Buffer. b64 "base64")))
@@ -20,9 +22,9 @@
         resized (. j-img scaleToFit wmax hmax)]
     (. resized getBuffer)))
 
-(defn- add-image-data [uuid name]
+(defn- add-image-data [uuid name ext]
   (let [db @db/db]
-    (swap! db conj {:id uuid :name name})))
+    (swap! db conj {:id uuid :name name :ext ext})))
 
 (defn handle-upload-image
   "Handles 'upload-image' request from clients."
@@ -35,7 +37,22 @@
           _                       (. fs writeFile (str "img/" uuid "." ext) img-buf)
           thumb                   (resized-image img-buf 300 300)
           _                       (. fs writeFile (str "img/thumb" uuid "." ext) thumb)
-          _                       (add-image-data uuid name)]
+          _                       (add-image-data uuid name ext)]
+      (. res sendStatus 200))
+    (catch js/Object e
+      (. res sendStatus 500))))
+
+;; :update-image-list
+
+(defn handle-upload-image-list [req res]
+  ;; [{:name "name" :id "uuid"} {...} ...]
+  (try
+    (let [img-list (. req -body)
+          cur-list (@db/db :img-list)]
+      ;; 'filter' shouldn't be used to keep the order sent by SPA
+      (swap! db/db #(update % :img-list (vec (for [img img-list
+                                                   :when (some #{(img :id)} (map :id cur-list))]
+                                               img))))
       (. res sendStatus 200))
     (catch js/Object e
       (. res sendStatus 500))))

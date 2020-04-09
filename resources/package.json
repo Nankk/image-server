@@ -12,7 +12,10 @@
         "ws": "^7.2.0"
     },
     "dependencies": {
+        "express": "^4.17.1",
+        "jdenticon": "^2.2.0",
         "jimp": "^0.10.1",
+        "stream": "0.0.2",
         "uuid": "^7.0.3"
     }
 }
