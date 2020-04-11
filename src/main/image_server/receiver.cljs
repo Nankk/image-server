@@ -1,14 +1,14 @@
 (ns image-server.receiver
   (:require
    ["fs" :as fs]
-   ["uuid" :as uuidv4]
+   ["uuid" :as uuid]
    ["jimp" :as jimp]
    [image-server.db :as db]
+   [async-interop.interop :refer-macros [<p!]]
    [cljs.core.async :as async :refer [>! <! go chan timeout go-loop]]
-   [cljs.reader :refer [read-string]]
    [clojure.string :as str]))
 
-;; :upload-image
+;; :upload-image (DONE)
 
 (defn- ->buffer [data-uri]
   (let [b64 (str/replace data-uri #"^data:[^;]+;base64," "")]
@@ -16,37 +16,43 @@
 
 (defn- resized-image
   "Resizes the img to fit in the wmax-hmax rectangle keeping the aspect ratio.
-  Returns a js buffer object"
-  [img wmax hmax]
-  (let [j-img   (<! (. jimp read img))
-        resized (. j-img scaleToFit wmax hmax)]
-    (. resized getBuffer)))
+  Returns a channel containing js buffer object"
+  [img wmax hmax mime]
+  (println "resized-image")
+  (let [ch (chan)]
+    (go (let [j-img   (<p! (. jimp read img))
+              resized (. j-img scaleToFit wmax hmax)
+              buf     (<p! (. resized getBufferAsync mime))]
+          (>! ch buf)))
+    ch))
 
 (defn- add-image-data [uuid name ext]
-  (let [db @db/db]
-    (swap! db conj {:id uuid :name name :ext ext})))
+  (swap! db/db #(update % :img-list (fn [x] (conj x {:id uuid :name name :ext ext})))))
 
 (defn handle-upload-image
   "Handles 'upload-image' request from clients."
   [req res]
-  (try
-    (let [{:keys [name data-uri]} (read-string (. req -body)) ; assuming edn string
-          uuid                    (uuidv4)
-          ext                     (subs data-uri (inc (str/index-of data-uri "/")) (str/index-of data-uri ";"))
-          img-buf                 (->buffer data-uri)
-          _                       (. fs writeFile (str "img/" uuid "." ext) img-buf)
-          thumb                   (resized-image img-buf 300 300)
-          _                       (. fs writeFile (str "img/thumb" uuid "." ext) thumb)
-          _                       (add-image-data uuid name ext)]
-      (. res sendStatus 200))
-    (catch js/Object e
-      (. js/console log e)
-      (. res sendStatus 500))))
+  (println "handle-upload-image")
+  (go
+    (try
+      (let [{:strs [name data-uri]} (js->clj (. req -body)) ; assuming edn string
+            uuid                    (uuid/v4)
+            ext                     (subs data-uri (inc (str/index-of data-uri "/")) (str/index-of data-uri ";"))
+            img-buf                 (->buffer data-uri)
+            _                       (. fs writeFileSync (str "public/img/original/" uuid "." ext) img-buf)
+            thumb                   (<! (resized-image img-buf 300 300 (str "image/" ext)))
+            _                       (. fs writeFileSync (str "public/img/thumb/" uuid "." ext) thumb)
+            _                       (add-image-data uuid name ext)]
+        (. res sendStatus 200))
+      (catch js/Object e
+        (. js/console log e)
+        (. res sendStatus 500)))))
 
-;; :update-image-list
+;; :update-image-list (TODO)
 
 (defn handle-upload-image-list [req res]
   ;; [{:name "name" :id "uuid"} {...} ...]
+  (println "handle-upload-image-list")
   (try
     (let [img-list (. req -body)
           cur-list (@db/db :img-list)]

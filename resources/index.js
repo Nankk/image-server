@@ -10,7 +10,7 @@ try {require('source-map-support').install();} catch (e) {console.warn('no "sour
 
 global.CLOSURE_NO_DEPS = true;
 
-global.CLOSURE_DEFINES = {"shadow.cljs.devtools.client.env.repl_pprint":false,"shadow.cljs.devtools.client.env.devtools_url":"","shadow.cljs.devtools.client.env.autoload":true,"shadow.cljs.devtools.client.env.proc_id":"a3b99c80-fca6-4d0e-9534-7e7ea415e5ea","goog.ENABLE_DEBUG_LOADER":false,"shadow.cljs.devtools.client.env.server_port":9630,"shadow.cljs.devtools.client.env.use_document_host":true,"shadow.cljs.devtools.client.env.module_format":"goog","goog.LOCALE":"en","re_frame.trace.trace_enabled_QMARK_":true,"shadow.cljs.devtools.client.env.build_id":"main","shadow.cljs.devtools.client.env.ignore_warnings":false,"goog.DEBUG":true,"cljs.core._STAR_target_STAR_":"nodejs","shadow.cljs.devtools.client.env.ssl":false,"shadow.cljs.devtools.client.env.enabled":true,"shadow.cljs.devtools.client.env.server_host":"localhost","goog.TRANSPILE":"never"};
+global.CLOSURE_DEFINES = {"shadow.cljs.devtools.client.env.repl_pprint":false,"shadow.cljs.devtools.client.env.devtools_url":"","shadow.cljs.devtools.client.env.autoload":true,"shadow.cljs.devtools.client.env.proc_id":"847de584-e408-4317-9987-da2fb56b2c29","goog.ENABLE_DEBUG_LOADER":false,"shadow.cljs.devtools.client.env.server_port":9630,"shadow.cljs.devtools.client.env.use_document_host":true,"shadow.cljs.devtools.client.env.module_format":"goog","goog.LOCALE":"en","re_frame.trace.trace_enabled_QMARK_":true,"shadow.cljs.devtools.client.env.build_id":"main","shadow.cljs.devtools.client.env.ignore_warnings":false,"goog.DEBUG":true,"cljs.core._STAR_target_STAR_":"nodejs","shadow.cljs.devtools.client.env.ssl":false,"shadow.cljs.devtools.client.env.enabled":true,"shadow.cljs.devtools.client.env.server_host":"localhost","goog.TRANSPILE":"never"};
 
 var goog = global.goog = {};
 
@@ -2186,6 +2186,8 @@ SHADOW_IMPORT("cljs.reader.js");
 SHADOW_IMPORT("shadow.cljs.devtools.client.node.js");
 SHADOW_IMPORT("shadow.js.shim.module$express.js");
 SHADOW_IMPORT("shadow.js.shim.module$process.js");
+SHADOW_IMPORT("shadow.js.shim.module$cors.js");
+SHADOW_IMPORT("shadow.js.shim.module$body_parser.js");
 SHADOW_IMPORT("cljs.core.async.impl.protocols.js");
 SHADOW_IMPORT("cljs.core.async.impl.buffers.js");
 SHADOW_IMPORT("goog.debug.entrypointregistry.js");

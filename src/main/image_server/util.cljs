@@ -3,7 +3,7 @@
    ["fs" :as fs]
    ["jdenticon" :as jd]
    ["stream" :as stream]
-   ["uuid" :as uuidv4]
+   ["uuid" :as uuid]
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
    [cljs.core.async :as async :refer [>! <! go chan timeout go-loop]]
@@ -16,7 +16,7 @@
   You can optionally specify identicon seed and size in options map:
   :seed as string, and :size as integer."
   [options]
-  (. jd toPng (or (options :seed) (uuidv4)) (or (options :size) 128)))
+  (. jd toPng (or (options :seed) (uuid/v4)) (or (options :size) 128)))
 
 (defn pretty-string [data]
   (with-out-str (pprint data)))
