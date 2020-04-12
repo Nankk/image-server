@@ -52,7 +52,7 @@
 
   ;; Receiver
   (. app post "/upload-image" rcv/handle-upload-image) ; DONE
-  (. app post "/upload-image-list" rcv/handle-upload-image) ; TODO
+  (. app post "/upload-image-list" rcv/handle-upload-image-list) ; TODO
 
   ;; Provider
   (. app get "/get-image" prv/handle-get-image)

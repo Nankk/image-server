@@ -51,15 +51,22 @@
 ;; :update-image-list (TODO)
 
 (defn handle-upload-image-list [req res]
-  ;; [{:name "name" :id "uuid"} {...} ...]
   (println "handle-upload-image-list")
   (try
-    (let [img-list (. req -body)
-          cur-list (@db/db :img-list)]
-      ;; 'filter' shouldn't be used to keep the order sent by SPA
-      (swap! db/db #(update % :img-list (vec (for [img img-list
-                                                   :when (some #{(img :id)} (map :id cur-list))]
-                                               img))))
+    (let [img-list-raw (js->clj (. req -body)) ; assuming edn string
+          ids-kept     (vec (map #(get % "id") img-list-raw))
+          _            (println ids-kept)
+          cur-list     (@db/db :img-list)
+          new-list     (loop [v   []
+                              ids ids-kept]
+                         (if (not-empty ids)
+                           (let [id   (first ids)
+                                 elem (first (filter #(= (% :id) id) cur-list))]
+                             (recur (if elem (conj v elem) v) (rest ids)))
+                           v))]
+      (swap! db/db #(assoc % :img-list new-list))
+      (println "img-list updated:")
+      (println (@db/db :img-list))
       (. res sendStatus 200))
     (catch js/Object e
       (. js/console log e)
