@@ -21,11 +21,9 @@
   (try
     (let [query     (util/->query req)
           item-idx  (js/parseInt (query :item-idx))
-          _         (println "item-idx: " item-idx)
-          page-idx  (@db/db :page-idx)
-          _         (println "page-idx: " page-idx)
-          idx       (+ item-idx (* page-idx (* const/thumb-columns const/thumb-rows)))
-          _         (println "calculated idx: " idx)
+          idx       (if-let [img-idx (query :img-idx)]
+                      (js/parseInt img-idx)
+                      (+ item-idx (* (@db/db :page-idx) (* const/thumb-columns const/thumb-rows))))
           _         (select-img (if (< idx (count (@db/db :img-list))) idx nil))
           identicon (util/identicon {:seed (query :identicon-seed)
                                      :size (query :size)})
