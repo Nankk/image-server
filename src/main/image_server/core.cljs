@@ -1,5 +1,6 @@
 (ns image-server.core
   (:require
+   ["fs" :as fs]
    ["express" :as express]
    ["process" :as process]
    ["cors" :as cors]
@@ -9,7 +10,9 @@
    [image-server.db :as db]
    [image-server.provider :as prv]
    [image-server.receiver :as rcv]
-   [image-server.game-manager :as gm]))
+   [image-server.game-manager :as gm]
+   [image-server.const :as const]
+   [clojure.string :as str]))
 
 ;; Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -32,7 +35,7 @@
       (swap! counter inc)
       @counter)))
 
-(defn- init [app]
+(defn- config-server [app]
   ;; CORS settings
   (. app use (cors))
 
@@ -68,25 +71,38 @@
   (println (str "### You have re-loaded the server " (reload-counter) " times. ###")))
 
 (defn- start-listening [app]
-  ;; Listen process.env.PORT or fixed port 55555
-  (let [env-port (.. js/process -env -PORT)
-        port (if env-port env-port 55555)]
+  (let [port const/port]
     (reset! server (. app listen port,
                       #(. js/console log
-                          (str "Listening on port " port)))))
-  )
+                          (str "Listening on port " port))))))
 
 (defn ^:dev/after-load start-server []
   (let [app (express.)]
-    (init app)
+    (config-server app)
     (set-handlers app)
     (display-reload-times)
     (start-listening app)))
 
-(defn main []
+(defn- delete-dir-contents [dir-path]
+  (println "delete-dir-contents [" dir-path "]")
+  (let [path (str/replace dir-path #"/$" "")
+        files (js->clj (. fs readdirSync dir-path))]
+    (doseq [file files]
+      (. fs unlinkSync (str path "/" file))
+      (println file "was deleted."))))
 
+(defn- init []
   ;; Initialize state
   (reset! db/db db/default-db)
+
+  ;; Delete remaining files of previous session
+  (delete-dir-contents "public/img/identicons")
+  (delete-dir-contents "public/img/original")
+  (delete-dir-contents "public/img/thumb"))
+
+(defn main []
+
+  (init)
 
   ;; To catch the uncathcable exception thrown to main loop of Express
   (. process on "uncaughtException"
