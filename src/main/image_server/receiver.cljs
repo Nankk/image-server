@@ -48,7 +48,7 @@
         (. js/console log e)
         (. res sendStatus 500)))))
 
-;; :update-image-list (TODO)
+;; :update-image-list (DONE)
 
 (defn handle-upload-image-list [req res]
   (println "handle-upload-image-list")
