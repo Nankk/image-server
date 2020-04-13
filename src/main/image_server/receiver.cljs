@@ -40,7 +40,7 @@
             ext                     (subs data-uri (inc (str/index-of data-uri "/")) (str/index-of data-uri ";"))
             img-buf                 (->buffer data-uri)
             _                       (. fs writeFileSync (str "public/img/original/" uuid "." ext) img-buf)
-            thumb                   (<! (resized-image img-buf 300 300 (str "image/" ext)))
+            thumb                   (<! (resized-image img-buf 200 100 (str "image/" ext)))
             _                       (. fs writeFileSync (str "public/img/thumb/" uuid "." ext) thumb)
             _                       (add-image-data uuid name ext)]
         (. res sendStatus 200))

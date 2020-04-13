@@ -2,6 +2,7 @@
   (:require
    ["fs" :as fs]
    ["express" :as express]
+   ["https" :as https]
    ["process" :as process]
    ["cors" :as cors]
    ["body-parser" :as bp]
@@ -13,6 +14,9 @@
    [image-server.game-manager :as gm]
    [image-server.const :as const]
    [clojure.string :as str]))
+
+(def debug?
+  ^boolean goog.DEBUG)
 
 ;; Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -70,18 +74,25 @@
     (println "Server reloaded"))
   (println (str "### You have re-loaded the server " (reload-counter) " times. ###")))
 
-(defn- start-listening [app]
-  (let [port const/port]
-    (reset! server (. app listen port,
+(defn- start-listening [app options]
+  (let [s-serv (if options
+                 (. https createServer options app)
+                 app)
+        port   const/port]
+    (reset! server (. s-serv listen port
                       #(. js/console log
                           (str "Listening on port " port))))))
 
 (defn ^:dev/after-load start-server []
-  (let [app (express.)]
+  (let [app  (express.)
+        options (if debug?
+                  nil
+                  (clj->js {:key (. fs readFileSync "key.pem")
+                            :cert (. fs readFileSync "cert.pem")}))]
     (config-server app)
     (set-handlers app)
     (display-reload-times)
-    (start-listening app)))
+    (start-listening app options)))
 
 (defn- delete-dir-contents [dir-path]
   (println "delete-dir-contents [" dir-path "]")
