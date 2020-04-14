@@ -87,8 +87,9 @@
   (let [app  (express.)
         options (if debug?
                   nil
-                  (clj->js {:key (. fs readFileSync "key.pem")
-                            :cert (. fs readFileSync "cert.pem")}))]
+                  (clj->js {:key (. fs readFileSync "/etc/letsencrypt/live/nankk.net/privkey.pem")
+                            :cert (. fs readFileSync "/etc/letsencrypt/live/nankk.net/cert.pem")
+                            :ca (. fs readFileSync "/etc/letsencrypt/live/nankk.net/chain.pem")}))]
     (config-server app)
     (set-handlers app)
     (display-reload-times)
