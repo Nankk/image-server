@@ -5,4 +5,4 @@
                  :page-idx 0
                  })
 
-(def db (atom {}))
+(def db (atom default-db))

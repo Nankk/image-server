@@ -6,7 +6,8 @@
    [image-server.db :as db]
    [async-interop.interop :refer-macros [<p!]]
    [cljs.core.async :as async :refer [>! <! go chan timeout go-loop]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.set :as set]))
 
 ;; :upload-image (DONE)
 
@@ -50,12 +51,17 @@
 
 ;; :update-image-list (DONE)
 
+(defn- remove-unlinked-files [fnames]
+  (doseq [fname fnames]
+    (. fs unlinkSync (str "public/img/original/" fname))
+    (. fs unlinkSync (str "public/img/thumb/" fname))
+    (println "Deleted " fname)))
+
 (defn handle-upload-image-list [req res]
   (println "handle-upload-image-list")
   (try
     (let [img-list-raw (js->clj (. req -body)) ; assuming edn string
           ids-kept     (vec (map #(get % "id") img-list-raw))
-          _            (println ids-kept)
           cur-list     (@db/db :img-list)
           new-list     (loop [v   []
                               ids ids-kept]
@@ -63,10 +69,12 @@
                            (let [id   (first ids)
                                  elem (first (filter #(= (% :id) id) cur-list))]
                              (recur (if elem (conj v elem) v) (rest ids)))
-                           v))]
+                           v))
+          fname-fn     (fn [item] (str (item :id) "." (item :ext)))
+          redundants   (set/difference (set (map fname-fn cur-list)) (set (map fname-fn new-list)))]
       (swap! db/db #(assoc % :img-list new-list))
+      (remove-unlinked-files redundants)
       (println "img-list updated:")
-      (println (@db/db :img-list))
       (. res sendStatus 200))
     (catch js/Object e
       (. js/console log e)
