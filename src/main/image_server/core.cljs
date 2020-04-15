@@ -101,6 +101,7 @@
 (defonce ch (chan))
 
 (defn- watch-certs []
+  (println "watch-certs")
   (go-loop []
     (when-some [file-type (<! ch)]
       (swap! renewed-map #(assoc % file-type true))
@@ -119,8 +120,9 @@
     (recur)))
 
 (defn- register-file-watch []
+  (println "register-file-watch")
   ;; (fs.watch() seems reasonable for watching but may not detect the file replacing)
-  (. fs watchFile const/privkey(clj->js {:interval 5000})
+  (. fs watchFile const/privkey (clj->js {:interval 5000})
      (fn [_ _]
        (println const/privkey " changed")
        (go (>! ch :privkey))))
@@ -128,7 +130,7 @@
      (fn [_ _]
        (println const/cert " changed")
        (go (>! ch :cert))))
-  (. fs watchFile const/ca "./c.txt" (clj->js {:interval 5000})
+  (. fs watchFile const/ca (clj->js {:interval 5000})
      (fn [_ _]
        (println const/ca " changed")
        (go (>! ch :ca)))))
