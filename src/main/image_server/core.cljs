@@ -12,8 +12,7 @@
    [image-server.provider :as prv]
    [image-server.receiver :as rcv]
    [image-server.game-manager :as gm]
-   [image-server.const :as const]
-   [clojure.string :as str]))
+   [image-server.const :as const]))
 
 (def debug?
   ^boolean goog.DEBUG)
@@ -72,7 +71,7 @@
   (when (some? @server)
     (. @server close)
     (println "Server reloaded"))
-  (println (str "### You have re-loaded the server " (reload-counter) " times. ###")))
+  (println (str "### Server was reloaded " (reload-counter) " times. ###")))
 
 (defn- start-listening [app options]
   (let [s-serv (if options
@@ -84,37 +83,57 @@
                           (str "Listening on port " port))))))
 
 (defn ^:dev/after-load start-server []
-  (let [app  (express.)
+  (let [app     (express.)
         options (if debug?
                   nil
-                  (clj->js {:key (. fs readFileSync "/etc/letsencrypt/live/nankk.net/privkey.pem")
-                            :cert (. fs readFileSync "/etc/letsencrypt/live/nankk.net/cert.pem")
-                            :ca (. fs readFileSync "/etc/letsencrypt/live/nankk.net/chain.pem")}))]
+                  (clj->js {:key  (. fs readFileSync const/privkey)
+                            :cert (. fs readFileSync const/cert)
+                            :ca   (. fs readFileSync const/ca)}))]
     (config-server app)
     (set-handlers app)
     (display-reload-times)
     (start-listening app options)))
 
-(defn- delete-dir-contents [dir-path]
-  (println "delete-dir-contents [" dir-path "]")
-  (let [path (str/replace dir-path #"/$" "")
-        files (js->clj (. fs readdirSync dir-path))]
-    (doseq [file files]
-      (. fs unlinkSync (str path "/" file))
-      (println file "was deleted."))))
+(defonce renewed-map (atom {:privkey false
+                            :cert    false
+                            :ca      false}))
 
-(defn- init []
-  ;; Initialize state
-  (reset! db/db db/default-db)
+(defonce ch (chan))
 
-  ;; Delete remaining files of previous session
-  (delete-dir-contents "public/img/identicons")
-  (delete-dir-contents "public/img/original")
-  (delete-dir-contents "public/img/thumb"))
+(defn- watch-certs []
+  (go-loop []
+    (when-some [file-type (<! ch)]
+      (swap! renewed-map #(assoc % file-type true))
+      (println file-type " became true")
+      (when (every? true? (vals @renewed-map))
+        (try
+          (println "All certification files were renewed.")
+          (start-server)
+          (println "Server")
+          (catch js/Error e
+            (println e))
+          (finally
+            (reset! renewed-map {:privkey false
+                                 :cert    false
+                                 :ca      false})))))
+    (recur)))
+
+(defn- register-file-watch []
+  ;; (fs.watch() seems reasonable for watching but may not detect the file replacing)
+  (. fs watchFile const/privkey(clj->js {:interval 5000})
+     (fn [_ _]
+       (println const/privkey " changed")
+       (go (>! ch :privkey))))
+  (. fs watchFile const/cert (clj->js {:interval 5000})
+     (fn [_ _]
+       (println const/cert " changed")
+       (go (>! ch :cert))))
+  (. fs watchFile const/ca "./c.txt" (clj->js {:interval 5000})
+     (fn [_ _]
+       (println const/ca " changed")
+       (go (>! ch :ca)))))
 
 (defn main []
-
-  (init)
 
   ;; To catch the uncathcable exception thrown to main loop of Express
   (. process on "uncaughtException"
@@ -125,4 +144,9 @@
        (println "###########################################")))
 
   ;; Starting server
-  (start-server))
+  (start-server)
+
+  ;; Watching certification renewal
+  (when (not debug?)
+    (watch-certs)
+    (register-file-watch)))
