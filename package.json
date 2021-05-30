@@ -1,1 +1,24 @@
-resources/package.json
+{
+    "name": "image-server",
+    "version": "0.0.1",
+    "main": "index.js",
+    "private": true,
+    "scripts": {
+        "start": "node index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "devDependencies": {
+        "shadow-cljs": "2.8.60",
+        "ws": "^7.4.6"
+    },
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "https": "^1.0.0",
+        "jdenticon": "^2.2.0",
+        "jimp": "^0.10.1",
+        "stream": "0.0.2",
+        "uuid": "^7.0.3"
+    }
+}
